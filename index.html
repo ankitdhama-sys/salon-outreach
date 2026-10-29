@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#19336B">
+<title>Salon Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💇</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#F8F9FA;--card:#fff;--text:#111827;--muted:#6B7280;--line:#E5E7EB;--primary:#2b69f6;--navy:#19336B;--tint:#EEF3FF;--ok:#22C55E;--warn:#F59E0B;--bad:#EF4444;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B1220;--card:#131C2E;--text:#F3F4F6;--muted:#9CA3AF;--line:#25324A;--tint:#1A2742;--navy:#0F2247;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0B1220;--card:#131C2E;--text:#F3F4F6;--muted:#9CA3AF;--line:#25324A;--tint:#1A2742;--navy:#0F2247;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Poppins,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg)}
+header{background:var(--navy);color:#fff;padding:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0;font-weight:600;flex:1}
+header small{opacity:.75;font-weight:400}
+.back,.hbtn{background:rgba(255,255,255,.15);border:0;color:#fff;min-width:36px;height:36px;border-radius:10px;font-size:17px;cursor:pointer;font-family:inherit}
+.hbtn.spin{animation:sp .8s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.hbtn.spin{animation:none}}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border-bottom:1px solid var(--line)}
+.tab{padding:13px;text-align:center;font-weight:500;color:var(--muted);border:0;background:none;border-bottom:3px solid transparent;cursor:pointer;font:inherit}
+.tab.on{color:var(--primary);border-color:var(--primary);font-weight:600}
+.tab b{background:var(--tint);color:var(--primary);border-radius:99px;padding:1px 8px;font-size:12px;margin-left:6px}
+.search{padding:12px 16px 4px}
+input[type=search],select,.inp,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 14px;font:inherit;background:var(--card);color:var(--text)}
+textarea{min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.list{padding:8px 16px 40px;display:grid;gap:10px}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.num{min-width:34px;height:34px;padding:0 4px;border-radius:10px;background:var(--tint);color:var(--primary);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.info{flex:1;min-width:0}
+.info strong{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info span{color:var(--muted);font-size:13px}
+.pill{font-size:12px;font-weight:500;padding:4px 10px;border-radius:99px;white-space:nowrap;background:var(--tint);color:var(--primary)}
+.pill.ok{background:rgba(34,197,94,.15);color:#16A34A}.pill.warn{background:rgba(245,158,11,.15);color:#B45309}.pill.bad{background:rgba(239,68,68,.15);color:#DC2626}
+.empty{text-align:center;color:var(--muted);padding:48px 16px;line-height:1.6}
+.info .act{display:block;width:fit-content;margin-top:6px;font-size:12px;font-weight:500;color:var(--primary);background:var(--tint);padding:3px 9px;border-radius:99px}
+.info .act.call{color:#B45309;background:rgba(245,158,11,.15)}
+.row.done{opacity:.7}
+.doneMark{width:28px;height:28px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.next{font-size:13px;font-weight:600;padding:10px 12px;border-radius:10px;margin-bottom:14px;background:var(--tint);color:var(--primary)}
+.next.call{background:rgba(245,158,11,.15);color:#B45309}
+.next.ok{background:rgba(34,197,94,.15);color:#16A34A}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:16px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.banner{display:flex;align-items:center;gap:8px;background:var(--tint);color:var(--primary);font-size:13px;font-weight:500;padding:8px 12px;border-radius:10px;margin-bottom:14px}
+.name{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.name h2,.ttl{margin:0;font-size:20px;font-weight:600}
+.gear{border:1px solid var(--line);background:var(--bg);color:var(--muted);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px;flex:none}
+.gear[aria-expanded=true]{border-color:var(--primary);color:var(--primary)}
+.area{color:var(--muted);margin:2px 0 12px}
+.lines{display:grid;gap:4px;font-size:14px;margin-bottom:6px}
+.lines:empty{display:none}
+.lines a{color:var(--primary);font-weight:600;text-decoration:none}
+.details{border:1px solid var(--line);border-radius:12px;padding:2px 14px 14px;background:var(--bg);margin-top:10px}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+.checks{display:grid;gap:10px}
+.chk{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;background:var(--bg)}
+.chk input{width:22px;height:22px;accent-color:var(--primary);margin:2px 0 0;flex:none}
+.chk strong{display:block;font-weight:600}
+.chk small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:2px}
+.chk em{font-style:normal;color:var(--primary);font-weight:600;margin-right:4px}
+.photoBox{border:1px dashed var(--primary);border-radius:12px;padding:14px;background:var(--tint)}
+.photoBox .ph-t{font-size:13px;font-weight:600;margin-bottom:10px}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.thumbs:empty{display:none}
+.th{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th button{position:absolute;top:4px;right:4px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:15px;line-height:1;cursor:pointer}
+.addPhoto{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card);color:var(--primary);border:1px solid var(--primary);border-radius:10px;padding:11px;font-weight:600;cursor:pointer}
+.chk:has(input:checked){border-color:var(--primary);background:var(--tint)}
+input[type=range]{width:100%;accent-color:var(--primary);height:32px}
+.ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.score{text-align:center;font-weight:600;font-size:15px;margin-top:2px}
+.btn{width:100%;margin-top:20px;border:0;border-radius:12px;padding:14px;font:inherit;font-weight:600;font-size:16px;color:#fff;background:linear-gradient(90deg,#3b82f6,#4f46e5);box-shadow:0 6px 16px rgba(43,105,246,.3);cursor:pointer}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.small{width:auto;padding:11px 18px;font-size:14px;margin-top:16px}
+.btn2{width:100%;margin-top:12px;border:1px solid var(--primary);background:var(--card);color:var(--primary);border-radius:12px;padding:12px;font:inherit;font-weight:600;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}
+.del{display:block;margin:20px auto 0;background:none;border:0;color:var(--bad);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+.p{color:var(--muted);font-size:13.5px;line-height:1.55;margin:6px 0 0}
+code{background:var(--tint);color:var(--primary);padding:1px 6px;border-radius:6px;font-size:12.5px}
+.err{color:var(--bad);font-size:13px;margin-top:10px;min-height:1em}
+.res{font-size:13.5px;margin-top:12px;line-height:1.55}.res:empty{display:none}.res.bad{color:var(--bad)}
+.hist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.hist li{border-left:3px solid var(--line);padding:2px 0 2px 10px;font-size:13.5px;line-height:1.45}
+.hist li small{color:var(--muted);font-size:12px}
+.hist li.none{border:0;color:var(--muted);padding:0}
+.hist li[data-id]{cursor:pointer}
+.hist li[data-id]:hover{border-color:var(--primary)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ok);color:#fff;padding:10px 18px;border-radius:99px;font-weight:500;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center;z-index:20}
+.toast.err{background:var(--bad);border-radius:14px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div id="loginView" class="hidden">
+    <header><h1>Salon Tracker</h1></header>
+    <form class="card" id="loginForm">
+      <h2 class="ttl">Who’s updating?</h2>
+      <p class="p">Your name is saved with every change, so the team can see who visited or updated each salon.</p>
+      <label class="f" for="uName">Your name</label>
+      <input id="uName" class="inp" required maxlength="60" autocomplete="name" placeholder="e.g. Ravi">
+      <div id="pwWrap" class="hidden">
+        <label class="f" for="uKey">Team password</label>
+        <input id="uKey" class="inp" type="password" autocomplete="current-password">
+      </div>
+      <div class="err" id="loginErr"></div>
+      <button class="btn" type="submit">Continue</button>
+    </form>
+  </div>
+
+  <div id="listView" class="hidden">
+    <header>
+      <h1>Salon list <small id="count"></small></h1>
+      <button class="hbtn" id="refresh" aria-label="Refresh list">↻</button>
+      <button class="hbtn" id="openAdmin" aria-label="Import, export and activity">☰</button>
+    </header>
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="first" role="tab">First visit<b id="nFirst">0</b></button>
+      <button class="tab" data-tab="revisit" role="tab">Revisit<b id="nRe">0</b></button>
+    </div>
+    <div class="search"><input type="search" id="q" placeholder="Search salon, area, phone…" aria-label="Search"></div>
+    <div class="list" id="list"><div class="empty">Loading salons…</div></div>
+  </div>
+
+  <div id="profileView" class="hidden">
+    <header><button class="back" id="back" aria-label="Back">←</button><h1>Profile</h1></header>
+    <div class="card">
+      <div class="banner">✎ <span id="upd"></span></div>
+      <div class="next" id="next"></div>
+      <div class="name"><h2 id="pName"></h2><button class="gear" id="gear" aria-label="Edit salon details" aria-expanded="false">⚙</button></div>
+      <div class="area" id="pArea"></div>
+      <div class="lines" id="lines"></div>
+
+      <div class="details hidden" id="details">
+        <label class="f" for="e_name">Salon name</label><input class="inp" id="e_name" maxlength="120">
+        <label class="f" for="e_area">Area</label><input class="inp" id="e_area" maxlength="120">
+        <label class="f" for="e_contact">Contact person</label><input class="inp" id="e_contact" maxlength="120">
+        <label class="f" for="e_phone">Phone</label><input class="inp" id="e_phone" maxlength="40" inputmode="tel">
+        <label class="f" for="e_address">Address</label><input class="inp" id="e_address" maxlength="300">
+      </div>
+
+      <label class="f" for="status">Status</label>
+      <select id="status"></select>
+
+      <label class="f">Checklist</label>
+      <div class="checks">
+        <label class="chk"><input type="checkbox" id="visit"><span><strong><em>1.</em>Visited the salon</strong><small>Our team member has met the salon owner or manager in person.</small></span></label>
+        <label class="chk"><input type="checkbox" id="profile"><span><strong><em>2.</em>Bewtee profile created</strong><small>The salon's listing is live on Bewtee with its details, services and photos.</small></span></label>
+        <label class="chk"><input type="checkbox" id="paid"><span><strong><em>3.</em>Paid account</strong><small>The salon has taken a paid plan and the payment is received.</small></span></label>
+        <label class="chk"><input type="checkbox" id="print"><span><strong><em>4.</em>Printed material at the salon</strong><small>Bewtee posters, standees or cards have been placed at the salon. Add photos as proof.</small></span></label>
+        <div class="photoBox hidden" id="photoBox"><div class="ph-t">Photos of printed material</div><div class="thumbs" id="thumbs"></div><label class="addPhoto">📷 Add photo<input type="file" id="file" accept="image/*" multiple hidden></label></div>
+      </div>
+
+      <label class="f" for="resp">Response</label>
+      <input type="range" id="resp" min="-5" max="5" step="1" value="0">
+      <div class="ends"><span>− Negative</span><span>Positive +</span></div>
+      <div class="score" id="score">0</div>
+
+      <label class="f" for="notes">Notes</label>
+      <textarea id="notes" maxlength="2000" placeholder="What did the owner say? Best time to visit?"></textarea>
+
+      <button class="btn" id="update">Update</button>
+    </div>
+
+    <div class="card">
+      <h2 class="ttl" style="font-size:16px;margin-bottom:12px">History</h2>
+      <ul class="hist" id="hist"></ul>
+      <button class="del" id="del">Delete this salon</button>
+    </div>
+  </div>
+
+  <div id="adminView" class="hidden">
+    <header><button class="back" id="adminBack" aria-label="Back">←</button><h1>Team tools</h1></header>
+
+    <div class="card">
+      <h2 class="ttl" style="font-size:16px">Import salon list</h2>
+      <p class="p">Upload a CSV with these columns: <code>name</code> (required), <code>area</code>, <code>contact</code>, <code>phone</code>, <code>address</code>, <code>notes</code>, <code>status</code>. Salons already in the tracker (same name and area) keep their progress; only contact, phone and address are refreshed from the file.</p>
+      <button class="btn2" id="tpl">⬇ Download CSV template</button>
+      <label class="btn2">⬆ Upload CSV file<input type="file" id="csv" accept=".csv,text/csv" hidden></label>
+      <div class="res" id="impRes"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="ttl" style="font-size:16px">Export</h2>
+      <p class="p">Download every salon with its checklist, status and response score. Opens in Excel or Google Sheets.</p>
+      <button class="btn2" id="exp">⬇ Download all salons (CSV)</button>
+    </div>
+
+    <div class="card">
+      <h2 class="ttl" style="font-size:16px;margin-bottom:12px">Recent team activity</h2>
+      <ul class="hist" id="feed"></ul>
+    </div>
+
+    <div class="card">
+      <p class="p" style="margin:0">Signed in as <strong id="meName"></strong></p>
+      <button class="btn2" id="rename">Change name</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const STATUSES=["New","Contacted","Interested","Follow-up","Paid","Not interested"];
+const KEYS=["visit","profile","paid","print"];
+const DET=["name","area","contact","phone","address"];
+const TEMPLATE=`name,area,contact,phone,address,notes,status
+XYZ Salon,Gangashahar,Ramesh Kumar,+91 90000 00001,"Near Clock Tower, Gangashahar",Owner is free after 4 pm,New
+`;
+const $=id=>document.getElementById(id);
+const store={get:k=>{try{return localStorage.getItem(k)||""}catch(e){return""}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+let me=store.get("st_user"),key=store.get("st_key"),needsPw=false;
+let salons=[],tab="first",cur=null,photos=[],view="";
+const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function show(v){view=v;["loginView","listView","profileView","adminView"].forEach(x=>$(x).classList.toggle("hidden",x!==v+"View"));scrollTo(0,0)}
+function toast(msg,bad){const t=$("toast");t.textContent=msg;t.classList.toggle("err",!!bad);t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),bad?3500:1400)}
+function ago(t){const s=(Date.now()-new Date(t))/1000;if(s<60)return"just now";if(s<3600)return Math.floor(s/60)+" min ago";if(s<86400)return Math.floor(s/3600)+" h ago";if(s<604800)return Math.floor(s/86400)+" d ago";return new Date(t).toLocaleDateString()}
+
+async function api(path,opt={}){
+  let r;
+  try{r=await fetch(path,{...opt,headers:{"Content-Type":"application/json","x-app-key":key,"x-user":encodeURIComponent(me)}})}
+  catch(e){throw new Error("No connection. Check your internet and try again.")}
+  const isJson=(r.headers.get("content-type")||"").includes("json");
+  const data=isJson?await r.json():await r.text();
+  if(r.status===401){showLogin("The team password is wrong or has changed.");const e=new Error("auth");e.silent=true;throw e}
+  if(!r.ok){const e=new Error((data&&data.error)||"Something went wrong ("+r.status+")");e.status=r.status;e.code=data&&data.code;throw e}
+  return data;
+}
+const fail=e=>{if(!e.silent)toast(e.message,true)};
+
+/* ---------- login ---------- */
+function showLogin(msg){$("uName").value=me;$("uKey").value="";$("pwWrap").classList.toggle("hidden",!needsPw);$("uKey").required=needsPw;$("loginErr").textContent=msg||"";show("login")}
+$("loginForm").onsubmit=async e=>{
+  e.preventDefault();me=$("uName").value.trim();if(!me)return;if(needsPw)key=$("uKey").value;
+  try{await api("/api/ping");store.set("st_user",me);store.set("st_key",key);show("list");load()}
+  catch(err){if(!err.silent)$("loginErr").textContent=err.message}
+};
+
+/* ---------- list ---------- */
+const isDone=s=>s.visit&&s.profile&&s.paid&&s.print;
+const isRevisit=s=>s.visit;
+const nextAction=s=>!s.visit?"Visit the salon":!s.profile?"Revisit: create Bewtee profile":!s.paid?"Call center: call salon for paid account":!s.print?"Revisit: place printed material":"All done";
+const tag=s=>{if(!s.visit||isDone(s))return"";const a=nextAction(s),c=a.startsWith("Call");return`<span class="act${c?" call":""}">${c?"📞 ":"↻ "}${a}</span>`};
+const cls=s=>({Paid:"ok",Interested:"ok","Follow-up":"warn","Not interested":"bad"}[s]||"");
+
+async function load(){
+  $("refresh").classList.add("spin");
+  try{salons=await api("/api/salons");render()}catch(e){fail(e)}
+  finally{$("refresh").classList.remove("spin")}
+}
+function render(){
+  const q=$("q").value.toLowerCase().trim();
+  $("nFirst").textContent=salons.filter(s=>!isRevisit(s)).length;
+  $("nRe").textContent=salons.filter(s=>isRevisit(s)&&!isDone(s)).length;
+  $("count").textContent=salons.length?"· "+salons.length:"";
+  if(!salons.length){$("list").innerHTML=`<div class="empty">No salons yet.<br>Import your salon list to get the team started.<br><button class="btn small" id="goImport">Import salon list (CSV)</button></div>`;return}
+  const rows=salons.filter(s=>(tab==="revisit")===isRevisit(s)&&[s.name,s.area,s.contact,s.phone].join(" ").toLowerCase().includes(q)).sort((a,b)=>isDone(a)-isDone(b)||a.id-b.id);
+  $("list").innerHTML=rows.length?rows.map(s=>`<button class="row${isDone(s)?" done":""}" data-id="${s.id}"><div class="num">#${s.id}</div><div class="info"><strong>${esc(s.name)}</strong><span>${esc(s.area)}</span>${tag(s)}</div>${isDone(s)?`<span class="doneMark" title="Done">✓</span>`:`<span class="pill ${cls(s.status)}">${esc(s.status)}</span>`}</button>`).join(""):`<div class="empty">${q?"No salons match your search.":tab==="first"?"Every salon has been visited at least once.":"No salons visited yet."}</div>`;
+}
+$("list").onclick=e=>{if(e.target.id==="goImport")return openAdmin();const r=e.target.closest(".row");if(r)openSalon(r.dataset.id)};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{tab=t.dataset.tab;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));render()});
+$("q").oninput=render;$("refresh").onclick=load;
+setInterval(()=>{if(view==="list"&&!document.hidden)load()},30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&view==="list")load()});
+
+/* ---------- profile ---------- */
+async function openSalon(id){try{cur=await api("/api/salons/"+id);fill();show("profile")}catch(e){fail(e)}}
+function fill(){
+  $("pName").textContent=cur.name;$("pArea").textContent="📍 "+(cur.area||"No area");
+  $("lines").innerHTML=[cur.contact&&`👤 ${esc(cur.contact)}`,cur.phone&&`📞 <a href="tel:${esc(cur.phone.replace(/[^\d+]/g,""))}">${esc(cur.phone)}</a>`,cur.address&&`🏠 ${esc(cur.address)}`].filter(Boolean).map(x=>`<div>${x}</div>`).join("");
+  DET.forEach(k=>$("e_"+k).value=cur[k]||"");$("details").classList.add("hidden");$("gear").setAttribute("aria-expanded","false");
+  $("status").value=cur.status;KEYS.forEach(k=>$(k).checked=cur[k]);
+  $("resp").value=cur.resp;showScore();$("notes").value=cur.notes||"";
+  photos=(cur.photos||[]).slice();drawPhotos();drawNext();
+  $("upd").textContent=cur.updated_by?`Updated by ${cur.updated_by}, ${ago(cur.updated_at)}`:"Not updated yet";
+  $("hist").innerHTML=histHtml(cur.activity,false);
+}
+function histHtml(list,withSalon){return list.length?list.map(a=>`<li${withSalon?` data-id="${a.salon_id}"`:""}><div>${withSalon?`<strong>${esc(a.salon_name)}</strong>: `:""}${esc(a.action)}</div><small>${esc(a.user_name)}, ${ago(a.created_at)}</small></li>`).join(""):`<li class="none">No activity yet.</li>`}
+function showScore(){const v=+$("resp").value;$("score").textContent=(v>0?"+":"")+v;$("score").style.color=v>0?"var(--ok)":v<0?"var(--bad)":"var(--muted)"}
+function drawNext(){const s={};KEYS.forEach(k=>s[k]=$(k).checked);const a=nextAction(s),done=isDone(s);$("next").className="next"+(done?" ok":a.startsWith("Call")?" call":"");$("next").textContent=done?"✓ All done, nothing pending":(a.startsWith("Call")?"📞 ":"Next: ")+a}
+
+$("status").innerHTML=STATUSES.map(s=>`<option>${s}</option>`).join("");
+$("back").onclick=()=>{show("list");render()};
+$("resp").oninput=showScore;
+$("gear").onclick=()=>{const open=$("details").classList.toggle("hidden");$("gear").setAttribute("aria-expanded",String(!open));if(!open)$("e_name").focus()};
+$("paid").addEventListener("change",()=>{if($("paid").checked)$("status").value="Paid"});
+KEYS.forEach(k=>$(k).addEventListener("change",drawNext));
+
+$("update").onclick=async()=>{
+  const b=$("update");if(b.disabled)return;
+  const body={version:cur.version,status:$("status").value,resp:+$("resp").value,notes:$("notes").value,photos:$("print").checked?photos:[]};
+  DET.forEach(k=>body[k]=$("e_"+k).value);KEYS.forEach(k=>body[k]=$(k).checked);
+  if(!body.name.trim()){toast("Salon name can't be empty.",true);return}
+  if(cur.photos.length&&!body.print&&!confirm("Unchecking printed material will remove its photos. Continue?"))return;
+  b.disabled=true;b.textContent="Saving…";
+  try{
+    const s=await api("/api/salons/"+cur.id,{method:"PUT",body:JSON.stringify(body)});
+    const i=salons.findIndex(x=>x.id===s.id);if(i>=0)salons[i]=s;
+    toast(s.unchanged?"No changes to save":"Saved ✓");
+    setTimeout(()=>{show("list");render();load()},600);
+  }catch(e){
+    if(e.code==="stale"){toast(e.message+" Showing the latest version now.",true);openSalon(cur.id)}else fail(e);
+  }finally{b.disabled=false;b.textContent="Update"}
+};
+$("del").onclick=async()=>{
+  if(!confirm(`Delete ${cur.name}? Its checklist and history will be removed for the whole team.`))return;
+  try{await api("/api/salons/"+cur.id,{method:"DELETE"});salons=salons.filter(s=>s.id!==cur.id);toast("Salon deleted");show("list");render()}catch(e){fail(e)}
+};
+
+/* photos */
+function drawPhotos(){
+  $("photoBox").classList.toggle("hidden",!$("print").checked);
+  $("thumbs").innerHTML=photos.map((p,i)=>`<div class="th"><img src="${p}" alt="Printed material photo ${i+1}"><button type="button" data-i="${i}" aria-label="Remove photo">×</button></div>`).join("");
+}
+function shrink(f){return new Promise((res,rej)=>{const r=new FileReader();r.onerror=rej;r.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{const k=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.7))};im.src=r.result};r.readAsDataURL(f)})}
+$("print").addEventListener("change",drawPhotos);
+$("thumbs").onclick=e=>{const b=e.target.closest("button");if(b){photos.splice(+b.dataset.i,1);drawPhotos()}};
+$("file").onchange=async e=>{
+  for(const f of e.target.files){if(photos.length>=10){toast("Up to 10 photos per salon.",true);break}try{photos.push(await shrink(f))}catch(err){toast("Couldn't read "+f.name,true)}}
+  e.target.value="";drawPhotos();
+};
+
+/* ---------- team tools ---------- */
+function openAdmin(){show("admin");$("meName").textContent=me;$("impRes").textContent="";loadActivity()}
+async function loadActivity(){$("feed").innerHTML=`<li class="none">Loading…</li>`;try{$("feed").innerHTML=histHtml(await api("/api/activity"),true)}catch(e){$("feed").innerHTML="";fail(e)}}
+function download(name,text){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+text],{type:"text/csv;charset=utf-8"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+$("openAdmin").onclick=openAdmin;
+$("adminBack").onclick=()=>{show("list");load()};
+$("feed").onclick=e=>{const li=e.target.closest("li[data-id]");if(li)openSalon(li.dataset.id)};
+$("tpl").onclick=()=>download("salon_list_template.csv",TEMPLATE);
+$("csv").onchange=async e=>{
+  const f=e.target.files[0];e.target.value="";if(!f)return;
+  const out=$("impRes");out.className="res";out.textContent="Importing "+f.name+"…";
+  try{
+    const r=await api("/api/import",{method:"POST",body:JSON.stringify({csv:await f.text()})});
+    out.innerHTML=`✓ ${r.added} added, ${r.updated} updated, ${r.unchanged} already up to date.`+(r.skipped.length?`<br>${r.skipped.length} row(s) skipped:<br>${r.skipped.slice(0,10).map(esc).join("<br>")}`:"");
+    salons=await api("/api/salons");loadActivity();
+  }catch(err){if(!err.silent){out.className="res bad";out.textContent=err.message}}
+};
+$("exp").onclick=async()=>{try{download(`salons_${new Date().toISOString().slice(0,10)}.csv`,await api("/api/export.csv"))}catch(e){fail(e)}};
+$("rename").onclick=()=>showLogin("");
+
+/* ---------- start ---------- */
+(async()=>{
+  try{needsPw=(await (await fetch("/api/config")).json()).needsPassword}catch(e){}
+  if(!me||(needsPw&&!key))return showLogin("");
+  show("list");load();
+})();
+</script>
+</body>
+</html>
