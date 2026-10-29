@@ -1,16 +1,14 @@
 import os,sqlite3,csv,io,secrets
 from pathlib import Path
-from functools import wraps
-from flask import Flask,request,jsonify,render_template,session,redirect,Response,send_from_directory
+from flask import Flask,request,jsonify,render_template,Response,send_from_directory
 from werkzeug.utils import secure_filename
-from werkzeug.security import check_password_hash
 from openpyxl import load_workbook
 
 BASE=Path(__file__).resolve().parent
 DATA=Path(os.environ.get('DATA_DIR',str(BASE/'data')))
 DATA.mkdir(parents=True,exist_ok=True)
 UPLOAD=DATA/'uploads';UPLOAD.mkdir(exist_ok=True)
-app=Flask(__name__);app.secret_key=os.environ.get('SECRET_KEY',secrets.token_hex(32));app.config['MAX_CONTENT_LENGTH']=12*1024*1024
+app=Flask(__name__);app.config['MAX_CONTENT_LENGTH']=12*1024*1024
 DB=DATA/'salons.sqlite3'
 FIELDS=['name','area','phone','reviews','followers','candidate','outreach','maps','notes','status','visit','profile','paid','print','resp','by_user']
 
@@ -23,29 +21,10 @@ def init():
   c.execute('''CREATE TABLE IF NOT EXISTS photos(id INTEGER PRIMARY KEY AUTOINCREMENT,salon_id INTEGER NOT NULL,filename TEXT NOT NULL,FOREIGN KEY(salon_id) REFERENCES salons(id))''')
 init()
 
-def auth(f):
- @wraps(f)
- def wrapped(*a,**kw):
-  if not session.get('ok'):return jsonify(error='Login required'),401
-  return f(*a,**kw)
- return wrapped
-
 @app.get('/')
 def home():return render_template('index.html')
 @app.get('/health')
 def health():return {'ok':True}
-@app.get('/api/me')
-def me():return {'authenticated':bool(session.get('ok')),'configured':bool(os.environ.get('ADMIN_PASSWORD'))}
-@app.post('/api/login')
-def login():
- pwd=os.environ.get('ADMIN_PASSWORD','')
- if not pwd:return jsonify(error='Set ADMIN_PASSWORD in Railway environment variables'),503
- submitted=(request.get_json(silent=True) or {}).get('password','')
- if not secrets.compare_digest(str(submitted),pwd):return jsonify(error='Incorrect password'),403
- session.clear();session['ok']=True;return {'ok':True}
-@app.post('/api/logout')
-def logout():session.clear();return {'ok':True}
-
 def get_all(c):
  rows=[dict(x) for x in c.execute('SELECT * FROM salons ORDER BY id DESC')]
  photos={}
@@ -54,7 +33,6 @@ def get_all(c):
  for r in rows:r['photos']=photos.get(r['id'],[])
  return rows
 @app.get('/api/salons')
-@auth
 def salons():
  with connect() as c:return jsonify(get_all(c))
 
@@ -71,7 +49,6 @@ def clean(data,existing=None):
  if 'name' in out and not out['name']:raise ValueError('Salon name is required')
  return out
 @app.post('/api/salons')
-@auth
 def create():
  try:d=clean(request.get_json(force=True));assert d.get('name')
  except (ValueError,TypeError,AssertionError):return jsonify(error='Valid salon name and numbers required'),400
@@ -79,7 +56,6 @@ def create():
   keys=list(d);cur=c.execute(f"INSERT INTO salons ({','.join(keys)}) VALUES ({','.join('?' for _ in keys)})",list(d.values()))
   return jsonify(id=cur.lastrowid),201
 @app.patch('/api/salons/<int:sid>')
-@auth
 def update(sid):
  try:d=clean(request.get_json(force=True))
  except (ValueError,TypeError):return jsonify(error='Invalid fields'),400
@@ -89,7 +65,6 @@ def update(sid):
   if not result.rowcount:return jsonify(error='Not found'),404
  return {'ok':True}
 @app.delete('/api/salons/<int:sid>')
-@auth
 def delete(sid):
  with connect() as c:
   for p in c.execute('SELECT filename FROM photos WHERE salon_id=?',(sid,)):
@@ -97,7 +72,6 @@ def delete(sid):
   c.execute('DELETE FROM photos WHERE salon_id=?',(sid,));c.execute('DELETE FROM salons WHERE id=?',(sid,))
  return {'ok':True}
 @app.post('/api/salons/<int:sid>/photos')
-@auth
 def photo_upload(sid):
  f=request.files.get('photo')
  if not f or not f.mimetype.startswith('image/') or f.mimetype not in ('image/jpeg','image/png','image/webp','image/gif'):return jsonify(error='JPEG, PNG, WEBP or GIF required'),400
@@ -108,26 +82,22 @@ def photo_upload(sid):
   p=c.execute('INSERT INTO photos(salon_id,filename) VALUES(?,?)',(sid,filename))
   return jsonify(id=p.lastrowid,url='/api/photos/'+str(p.lastrowid)),201
 @app.get('/api/photos/<int:pid>')
-@auth
 def photo(pid):
  with connect() as c:p=c.execute('SELECT filename FROM photos WHERE id=?',(pid,)).fetchone()
  if not p:return jsonify(error='Not found'),404
  return send_from_directory(UPLOAD,p['filename'])
 @app.delete('/api/photos/<int:pid>')
-@auth
 def remove_photo(pid):
  with connect() as c:
   p=c.execute('SELECT filename FROM photos WHERE id=?',(pid,)).fetchone()
   if p:(UPLOAD/p['filename']).unlink(missing_ok=True);c.execute('DELETE FROM photos WHERE id=?',(pid,))
  return {'ok':True}
 @app.get('/api/export')
-@auth
 def export():
  with connect() as c:rows=get_all(c)
  s=io.StringIO();cols=['id']+FIELDS+['updated_at'];w=csv.DictWriter(s,fieldnames=cols,extrasaction='ignore');w.writeheader();w.writerows(rows)
  return Response('\ufeff'+s.getvalue(),mimetype='text/csv',headers={'Content-Disposition':'attachment; filename=salon-tracker-export.csv'})
 @app.post('/api/import')
-@auth
 def import_sheet():
  f=request.files.get('file')
  if not f:return jsonify(error='Choose an .xlsx file'),400
